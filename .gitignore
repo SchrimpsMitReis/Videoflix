@@ -1,0 +1,86 @@
+# =========================
+# Python / Django
+# =========================
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+*.sqlite3
+
+# Virtual Environment
+env/
+venv/
+.venv/
+
+# Django stuff
+*.log
+db.sqlite3
+media/
+staticfiles/
+
+# =========================
+# Environment / Secrets
+# =========================
+.env
+.env.*
+!.env.template
+
+# =========================
+# VS Code / IDE
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# OS Stuff
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Node (falls Angular etc.)
+# =========================
+node_modules/
+dist/
+.angular/
+.cache/
+
+# =========================
+# Docker
+# =========================
+*.pid
+*.sock
+
+# =========================
+# RQ / Redis
+# =========================
+rqworker.pid
+
+# =========================
+# Logs
+# =========================
+logs/
+*.log
+
+# =========================
+# Uploads / Videos / HLS
+# =========================
+*.mp4
+*.mov
+*.avi
+*.mkv
+
+# HLS Output
+*.ts
+*.m3u8
+
+# Optional: komplette Video-Ordner
+videos/
+uploads/
+
+# =========================
+# Build / Temp
+# =========================
+tmp/
+temp/
+kram.txt
