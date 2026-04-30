@@ -7,7 +7,7 @@ LABEL description="Python 3.12 Alpine"
 WORKDIR /app
 
 COPY . .
-
+COPY norton.crt /usr/local/share/ca-certificates/norton.crt
 RUN apk update && \
     apk add --no-cache --upgrade \
         bash \

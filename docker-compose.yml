@@ -34,6 +34,23 @@ services:
     depends_on:
       - db
       - redis
+      - mailhog
+    links:
+      - 'mailhog'
+
+  mailhog:
+    image: mailhog/mailhog
+    container_name: mailhog
+    environment:
+      MH_AUTH_FILE: /mailhog.auth
+      MH_MAILDIR_PATH: /data
+      MH_STORAGE: maildir
+    volumes:
+      - ./mailhog.auth:/mailhog.auth:ro
+      - ./data:/data:rw
+    ports:
+      - "1025:1025" #127.0.0.1:1025:1025  
+      - "8025:8025"
 
 
 
