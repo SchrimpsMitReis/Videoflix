@@ -157,7 +157,7 @@ class LogoutView(APIView):
     and blacklists the refresh token.
     """
     permission_classes = [IsAuthenticated]
-    authentication_classes = [CookieJWTAuthentication]
+    authentication_classes = []
 
     def post(self, request):
         """
@@ -167,20 +167,7 @@ class LogoutView(APIView):
         try:
 
             self._blacklist_refresh_token(request)
-
-            response = Response(
-                {"detail": "Logout successful! All tokens will be deleted. Refresh token is now invalid."},
-                status=status.HTTP_200_OK
-            )
-            response.delete_cookie(
-                key="access_token",
-                path="/")
-            response.delete_cookie(
-                key="refresh_token",
-                path="/"
-            )
-
-            return response
+            return self._create_success_response()
 
         except Exception:
             return Response({"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
@@ -192,6 +179,22 @@ class LogoutView(APIView):
         refresh_token = request.COOKIES.get("refresh_token")
         refresh_token_to_delete = RefreshToken(refresh_token)
         refresh_token_to_delete.blacklist()
+
+    def _create_success_response(self):
+        response = Response(
+            {"detail": "Logout successful! All tokens will be deleted. Refresh token is now invalid."},
+            status=status.HTTP_200_OK
+        )
+        response.delete_cookie(
+            key="access_token",
+            path="/")
+        response.delete_cookie(
+            key="refresh_token",
+            path="/"
+        )
+
+        return response
+
 
 class PasswordResetView(APIView):
 
@@ -232,9 +235,6 @@ class PasswordConfirmView(APIView):
         data = self._combine_url_credentials_to_request_data(request, uidb64, token)
         serializer = PasswordConfirmSerializer(data=data)
         serializer.is_valid(raise_exception=True)
-        # user = serializer.validated_data["user"]
-        # # user.is_active = True
-        # user.save()
 
         return Response(
             {"detail": "Your Password has been successfully reset."},

@@ -84,6 +84,19 @@ docker compose exec web python manage.py migrate
 docker compose exec web python manage.py createsuperuser
 ```
 
+### 🧪 Optional: Lokales Development (für Editor / Debugging)
+
+## Optional: Lokales Development Setup
+
+Für bessere IDE-Unterstützung (z. B. VS Code Autocomplete):
+
+```md
+python -m venv env
+env\Scripts\activate  # Windows
+
+pip install -r requirements.txt
+```
+
 ---
 
 ## 🌐 Zugriff
