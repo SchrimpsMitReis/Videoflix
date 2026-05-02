@@ -48,22 +48,13 @@ REDIS_DB=os.environ.get("REDIS_DB",default="")
 
 EMAIL_HOST=os.environ.get("EMAIL_HOST",default="")
 EMAIL_PORT=os.environ.get("EMAIL_PORT",default="")
-# EMAIL_HOST_USER=os.environ.get("EMAIL_HOST_USER",default="")
-# EMAIL_HOST_PASSWORD=os.environ.get("EMAIL_HOST_PASSWORD",default="")
-# EMAIL_USE_TLS=str_to_bool(os.environ.get("EMAIL_USE_TLS",default=""))
-# EMAIL_USE_SSL=str_to_bool(os.environ.get("EMAIL_USE_SSL",default=""))
-# DEFAULT_FROM_EMAIL=os.environ.get("DEFAULT_FROM_EMAIL",default="")
 
-print("RAW DEV_MODE:", os.getenv("DEV_MODE"))
-print("PARSED DEV_MODE:", DEV_MODE)
 
 EMAIL_BACKEND = (
     'django.core.mail.backends.smtp.EmailBackend'
-    # "django.core.mail.backends.console.EmailBackend"
-    # if DEV_MODE
-    # else "django.core.mail.backends.smtp.EmailBackend"
 )
-BASE_URL = os.getenv("BASE_URL", "http://localhost:8000")
+BASE_URL = os.getenv("BASE_URL", "http://localhost:5500")
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -95,12 +86,6 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'core.urls'
 
-# CORS_ALLOW_ALL_ORIGINS = True
-
-# CSRF_TRUSTED_ORIGINS = [
-#     "http://localhost:5500",
-#     "http://127.0.0.1:5500",
-# ]
 
 TEMPLATES = [
     {
