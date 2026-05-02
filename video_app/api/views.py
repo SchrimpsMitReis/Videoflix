@@ -13,7 +13,7 @@ class VideoListView(APIView):
 
     def get(self, request):
         queryset = Video.objects.all()
-        serializer = VideoSerializer(queryset, many=True)
+        serializer = VideoSerializer(queryset, many=True, context={"request": request})
         return Response(serializer.data)
 
 # class VideoView(APIView):

@@ -1,0 +1,26 @@
+HELO:<1286cd3ccb9e>
+FROM:<webmaster@localhost>
+TO:<thesuperjorday@live.com>
+
+Content-Type: multipart/alternative;
+ boundary="===============5527554518545444922=="
+MIME-Version: 1.0
+Subject: Aktiviere deinen Account
+From: webmaster@localhost
+To: thesuperjorday@live.com
+Date: Sat, 02 May 2026 13:07:42 -0000
+Message-ID: <177772726290.18.3042302290172346414@1286cd3ccb9e>
+
+--===============5527554518545444922==
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+
+Klick auf den Link: http://localhost:8000/api/activate/NQ/d7ycgu-9af992bd2475e9baa28fa403c738f806/
+--===============5527554518545444922==
+Content-Type: text/html; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
+
+<h1>Aktiviere deinen Account</h1><a href='http://localhost:8000/api/activate/NQ/d7ycgu-9af992bd2475e9baa28fa403c738f806/'>Jetzt aktivieren</a>
+--===============5527554518545444922==--

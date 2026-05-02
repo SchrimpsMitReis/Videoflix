@@ -84,3 +84,6 @@ uploads/
 tmp/
 temp/
 kram.txt
+
+# GuniCorn
+gunicorn.ctl
