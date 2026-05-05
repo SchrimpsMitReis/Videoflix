@@ -99,6 +99,37 @@ pip install -r requirements.txt
 
 ---
 
+## API Documentation (drf-spectacular)
+
+This project uses **drf-spectacular** to automatically generate an OpenAPI-compliant schema for the backend API.  
+The documentation is derived directly from Django REST Framework views and serializers and is enhanced with explicit annotations for custom logic such as cookie-based authentication and video streaming endpoints.
+
+### Swagger UI
+
+An interactive API documentation is available at:
+
+```
+/api/docs/
+```
+
+
+### OpenAPI Schema
+
+The raw OpenAPI schema can be accessed at:
+
+```
+/api/schema/
+```
+
+
+### Notes
+
+- The documentation is generated directly from the codebase (views, serializers, and annotations)
+- Custom behaviors (e.g. cookie-based JWT authentication and HLS streaming) are explicitly documented
+- The schema can be used for client generation, API validation, or integration with external tools
+
+---
+
 ## 🌐 Zugriff
 
 | Service     | URL                         |
@@ -169,6 +200,7 @@ Für Frontend-Integration:
 ```python
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5500",
+    "http://127.0.0.1:5500",
 ]
 ```
 
