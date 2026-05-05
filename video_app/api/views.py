@@ -1,6 +1,8 @@
 
 import os
-
+from drf_spectacular.utils import extend_schema, OpenApiParameter, OpenApiTypes
+from .serializers import VideoSerializer
+from .schema import VideoStreamNotFoundSerializer
 from django.http import FileResponse, Http404
 from rest_framework.decorators import APIView
 from rest_framework.viewsets import ReadOnlyModelViewSet
@@ -11,43 +13,59 @@ from video_app.models import Video
 
 class VideoListView(APIView):
 
+    @extend_schema(
+        tags=["Video"],
+        operation_id="01_Video_List",
+        summary="List videos",
+        description="Returns a list of all available videos.",
+        responses={
+            200: VideoSerializer(many=True),
+        },
+    )
+
     def get(self, request):
         queryset = Video.objects.all()
         serializer = VideoSerializer(queryset, many=True, context={"request": request})
         return Response(serializer.data)
 
-# class VideoView(APIView):
-#     queryset = Video.objects.all()
-#     serializer = VideoSerializer
-    
-#     def get(self, request):
-
-#         return Response({"Say": "Hallo"})
-
-# class VideoViewSet(ReadOnlyModelViewSet):
-
-#     queryset = Video.objects.all()
-#     serializer_class = VideoSerializer
-
-#     def list(self, request, *args, **kwargs):
-#         return super().list(request, *args, **kwargs)
-
     
 
 class VideoStreamView(APIView):
 
+    @extend_schema(
+        tags=["Video"],
+        summary="Get HLS playlist",
+        description="Returns the HLS .m3u8 playlist for a video in the requested resolution.",
+        parameters=[
+            OpenApiParameter(
+                name="movie_id",
+                type=int,
+                location=OpenApiParameter.PATH,
+                description="ID of the video.",
+            ),
+            OpenApiParameter(
+                name="resolution",
+                type=str,
+                location=OpenApiParameter.PATH,
+                description="Requested resolution, e.g. 480p, 720p or 1080p.",
+            ),
+        ],
+        responses={
+            (200, "application/vnd.apple.mpegurl"): OpenApiTypes.STR,
+            404: VideoStreamNotFoundSerializer,
+        },
+    )
+
     def get(self, request, movie_id, resolution):
         video = Video.objects.get(id=movie_id)
 
-        base_path = video.video_file.path  # dein Originalvideo
+        base_path = video.video_file.path 
         base, _ = os.path.splitext(base_path)
-        # Beispiel: /media/video_1_480p_hls/video_1_480p.m3u8
         playlist_path = os.path.join(
             f"{base}_hls",
             f"{os.path.basename(base)}_{resolution}.m3u8"
         )
-        print("BananaPath: ", playlist_path)
-        # /app/media/video/257593_hls/257593_480p.m3u8
+        
         if not os.path.exists(playlist_path):
             raise Http404("Video oder Manifest nicht gefunden")
 
@@ -57,6 +75,36 @@ class VideoStreamView(APIView):
         )
     
 class VideoStreamSegmentView(APIView):
+
+    @extend_schema(
+        tags=["Video"],
+        summary="Get HLS segment",
+        description="Returns a .ts HLS video segment.",
+        parameters=[
+            OpenApiParameter(
+                name="movie_id",
+                type=int,
+                location=OpenApiParameter.PATH,
+                description="ID of the video.",
+            ),
+            OpenApiParameter(
+                name="resolution",
+                type=str,
+                location=OpenApiParameter.PATH,
+                description="Requested resolution, e.g. 480p, 720p or 1080p.",
+            ),
+            OpenApiParameter(
+                name="segment",
+                type=str,
+                location=OpenApiParameter.PATH,
+                description="Segment filename, e.g. video_480p_001.ts.",
+            ),
+        ],
+        responses={
+            (200, "video/mp2t"): OpenApiTypes.BINARY,
+            404: VideoStreamNotFoundSerializer,
+        },
+    )
 
     def get(self, request, movie_id, resolution, segment):
         video = Video.objects.get(id=movie_id)
@@ -68,8 +116,6 @@ class VideoStreamSegmentView(APIView):
             f"{base}_hls",
             segment
         )
-
-        print("BananaPath:", segment_path)
 
         if not os.path.exists(segment_path):
             raise Http404("Video oder Segment nicht gefunden")

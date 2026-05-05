@@ -140,19 +140,33 @@ class PasswordConfirmSerializer(serializers.Serializer):
         token = attrs.get('token')
         new_password = attrs.get('new_password')
         confirm_password = attrs.get('confirm_password')
+        user = self._check_attrs(uidb64, token,new_password,confirm_password)
+        attrs["user"] = self._save_user_and_password(user, new_password)
+        return attrs
+    
+    def _convert_and_check_user_id(self,uidb64):
         try:
           user_id =  force_str(urlsafe_base64_decode(uidb64))
           user = User.objects.get(pk=user_id)
         except Exception:
-            raise serializers.ValidationError({"detail": "Invalid activation link."})        
-        
+            raise serializers.ValidationError({"detail": "Invalid activation link."})
+        return user
+
+    def _save_user_and_password(self, user, new_password):
+        user.set_password(new_password)
+        user.save()
+        return user
+
+    def _check_token(self, user, token):
         if not default_token_generator.check_token(user, token):
             raise serializers.ValidationError({"detail": "Invalid or expired token."})
 
+    def _check_password(self, new_password,confirm_password):
         if not new_password == confirm_password:
             raise serializers.ValidationError({"detail": "Password dont match"})
 
-        user.set_password(new_password)
-        user.save()
-        attrs["user"] = user
-        return attrs
+    def _check_attrs(self, uidb64, token,new_password,confirm_password):
+        user = self._convert_and_check_user_id(uidb64)
+        self._check_token(user,token)
+        self._check_password(new_password,confirm_password)
+        return user

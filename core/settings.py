@@ -25,15 +25,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv('SECRET_KEY', default="django-insecure-lp6h18zq4@z30symy*oz)+hp^uoti48r_ix^qc-m@&yfxd7&hn")
-# DEV_MODE = str_to_bool(os.getenv("DEV_MODE", "False"))
 DEV_MODE = False
-# SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
 ALLOWED_HOSTS = os.environ.get("ALLOWED_HOSTS", default="localhost").split(",")
-# CSRF_TRUSTED_ORIGINS = os.environ.get("CSRF_TRUSTED_ORIGINS", default="http://localhost:4200").split(",")
-
-# .env loose
 
 DB_NAME=os.environ.get("DB_NAME",default="")
 DB_USER=os.environ.get("DB_USER",default="")
@@ -53,7 +48,8 @@ EMAIL_PORT=os.environ.get("EMAIL_PORT",default="")
 EMAIL_BACKEND = (
     'django.core.mail.backends.smtp.EmailBackend'
 )
-BASE_URL = os.getenv("BASE_URL", "http://localhost:5500")
+BACKEND_BASE_URL = os.getenv("BACKEND_BASE_URL", "http://localhost:8000")
+FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:5500")
 
 # Application definition
 
@@ -70,6 +66,7 @@ INSTALLED_APPS = [
     'auth_app',
     'video_app.apps.VideoAppConfig',
     "rest_framework_simplejwt.token_blacklist",
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -202,5 +199,50 @@ MEDIA_ROOT = BASE_DIR / "media"
 
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+REST_FRAMEWORK = {
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
 
+ # Spectacular Settings
 
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Videoflix API",
+    "DESCRIPTION": "API documentation for Videoflix",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "TAGS": [
+
+        {
+            "name": "Auth",
+            "description": (
+                "Authentication workflow:\n\n"
+                "1. Register a new user\n"
+                "2. Activate account via email link\n"
+                "3. Login to receive cookies\n"
+                "4. Refresh access token\n"
+                "5. Logout and invalidate tokens\n"
+                "6. Reset password via email\n"
+                "7. Confirm new password"
+            ),
+        },
+        {
+            "name": "Video",
+            "description": (
+                "Video streaming endpoints based on HTTP Live Streaming (HLS).\n\n"
+
+                "Workflow:\n"
+                "1. Retrieve a list of available videos\n"
+                "2. Request a playlist (.m3u8) for a specific video and resolution\n"
+                "3. The video player automatically loads video segments (.ts)\n\n"
+
+                "Notes:\n"
+                "- The playlist (.m3u8) contains references to video segments\n"
+                "- Segment endpoints are consumed by video players and not intended for manual use\n"
+                "- Supported resolutions depend on the source video (no upscaling)\n"
+            ),
+        },
+        ],    
+    "SWAGGER_UI_SETTINGS": {
+        "operationsSorter": "alpha",
+    },
+}

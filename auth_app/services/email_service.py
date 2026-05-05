@@ -9,7 +9,7 @@ def generate_link(user, path):
     uidb64 = urlsafe_base64_encode(force_bytes(user.id))
     token = default_token_generator.make_token(user)
 
-    link = f"{settings.BASE_URL}/api/{path}/{uidb64}/{token}/"
+    link = f"{settings.FRONTEND_BASE_URL}/pages/auth/{path}.html?uid={uidb64}&token={token}"
     activation_data = {
         "link": link,
         "token": token

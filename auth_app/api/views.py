@@ -7,6 +7,20 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from auth_app.api.authentications import CookieJWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from core.settings import DEV_MODE
+from drf_spectacular.utils import extend_schema
+from .schema import (
+    LogoutErrorResponseSerializer,
+    LogoutResponseSerializer,
+    PasswordConfirmResponseSerializer,
+    RegistrationResponseSerializer,
+    RegistrationDevResponseSerializer,
+    ActivationResponseSerializer,
+    LoginResponseSerializer,
+    TokenRefreshResponseSerializer, 
+    ErrorResponseSerializer,
+    PasswordResetResponseSerializer, PasswordResetDevResponseSerializer
+)
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 
 
 class RegistrationView(APIView):
@@ -15,6 +29,17 @@ class RegistrationView(APIView):
     Accessible without authentication.
     """
     permission_classes = [AllowAny]
+
+    @extend_schema(
+        tags=["Auth"],
+        operation_id="01_auth_register",
+        summary="Register user",
+        request=RegistrationSerializer,
+        responses={
+            201: RegistrationDevResponseSerializer if DEV_MODE else RegistrationResponseSerializer,
+        },
+        description="Creates a new inactive user account and sends an activation link by email.",
+        )
 
     def post(self, request):
         """
@@ -52,7 +77,36 @@ class RegistrationView(APIView):
 
 class ActivationView(APIView):
 
+    """
+    GETs a request from the frontend, with a b64 coded UserID an a token
+    if Serializer is valid it sets the useraccount on is_active == true
+    """
+
     permission_classes = [AllowAny]
+
+    @extend_schema(
+        tags=["Auth"],
+        operation_id="02_auth_activate",
+        summary="Activate user account",
+        description="Activates a user account using the uidb64 and token from the activation link.",
+        parameters=[
+            OpenApiParameter(
+                name="uidb64",
+                type=str,
+                location=OpenApiParameter.PATH,
+                description="Base64 encoded user ID",
+            ),
+            OpenApiParameter(
+                name="token",
+                type=str,
+                location=OpenApiParameter.PATH,
+                description="Activation token",
+            ),
+        ],
+        responses={
+            200: ActivationResponseSerializer,
+        },
+    )
 
     def get(self, request, uidb64, token):
 
@@ -76,6 +130,19 @@ class LoginView(TokenObtainPairView):
     serializer_class = LoginSerializer
     permission_classes = [AllowAny]
 
+    @extend_schema(
+        tags=["Auth"],
+        operation_id="03_auth_login",
+        summary="Login user",
+        description=(
+            "Authenticates a user and sets access_token and refresh_token "
+            "as HttpOnly cookies."
+        ),
+        request=LoginSerializer,
+        responses={
+            200: LoginResponseSerializer,
+        },)
+
     def post(self, request, *args, **kwargs):
 
         serializer = self.get_serializer(data=request.data)
@@ -96,27 +163,60 @@ class LoginView(TokenObtainPairView):
             status=status.HTTP_200_OK
         )
 
+        return self._set_cookies(
+            response=response,
+            access=access,
+            refresh=refresh
+        )
+    
+    def _set_cookies(self, response, access, refresh):
         response.set_cookie(
             key="access_token",
             value=access,
             httponly=True,
-            secure=True,
-            samesite="LAX"
+            secure=False,
+            samesite="Lax",
+            path="/"
         )
+
         response.set_cookie(
             key="refresh_token",
             value=refresh,
             httponly=True,
-            secure=True,
-            samesite="LAX"
+            secure=False,
+            samesite="Lax",
+            path="/"
         )
-
         return response
 
 class CookieTokenRefreshView(TokenRefreshView):
     """
     Refresh the access token using the refresh token stored in cookies.
     """
+    @extend_schema(
+        tags=["Auth"],
+        operation_id="04_auth_token_refresh",
+        summary="Refresh access token (via cookie)",
+        description=(
+            "Generates a new access token using the refresh_token stored in cookies. "
+            "Sets a new access_token cookie if successful."
+        ),
+        # ❗ kein request body nötig → kommt aus Cookie
+        request=None,
+        parameters=[
+            OpenApiParameter(
+                name="refresh_token",
+                type=str,
+                location=OpenApiParameter.COOKIE,
+                description="JWT refresh token stored in HttpOnly cookie",
+                required=True,
+            )
+        ],
+        responses={
+            200: TokenRefreshResponseSerializer,
+            401: ErrorResponseSerializer,
+        },
+    )
 
     def post(self, request, *args, **kwargs):
         """
@@ -159,6 +259,37 @@ class LogoutView(APIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = []
 
+    @extend_schema(
+        tags=["Auth"],
+        operation_id="05_auth_logout",
+        summary="Logout user",
+        description=(
+            "Blacklists the refresh token from the refresh_token cookie "
+            "and deletes access_token and refresh_token cookies."
+        ),
+        request=None,
+        parameters=[
+            OpenApiParameter(
+                name="refresh_token",
+                type=str,
+                location=OpenApiParameter.COOKIE,
+                required=True,
+                description="JWT refresh token stored in HttpOnly cookie.",
+            ),
+            OpenApiParameter(
+                name="access_token",
+                type=str,
+                location=OpenApiParameter.COOKIE,
+                required=True,
+                description="JWT access token stored in HttpOnly cookie.",
+            ),
+        ],
+        responses={
+            200: LogoutResponseSerializer,
+            400: LogoutErrorResponseSerializer,
+        },
+    )
+
     def post(self, request):
         """
         Invalidate the refresh token and remove authentication cookies.
@@ -195,11 +326,21 @@ class LogoutView(APIView):
 
         return response
 
-
 class PasswordResetView(APIView):
 
     permission_classes = [AllowAny]
     authentication_classes = []
+
+    @extend_schema( 
+        tags=["Auth"],
+        operation_id="06_auth_password_reset",
+        summary="Request password reset",
+        description="Sends a password reset link to the user's email address.",
+        request=PasswordResetSerializer,
+        responses={
+            200: PasswordResetDevResponseSerializer if DEV_MODE else PasswordResetResponseSerializer,
+        },
+    )
 
     def post(self, request):
         """
@@ -227,6 +368,34 @@ class PasswordResetView(APIView):
 class PasswordConfirmView(APIView):
 
     permission_classes = [AllowAny]
+
+    @extend_schema(
+        tags=["Auth"],
+        operation_id="07_auth_password_confirm",
+        summary="Confirm password reset",
+        description=(
+            "Resets the user's password using uidb64 and token from the URL "
+            "and the new password from the request body."
+        ),
+        parameters=[
+            OpenApiParameter(
+                name="uidb64",
+                type=str,
+                location=OpenApiParameter.PATH,
+                description="Base64 encoded user ID",
+            ),
+            OpenApiParameter(
+                name="token",
+                type=str,
+                location=OpenApiParameter.PATH,
+                description="Password reset token",
+            ),
+        ],
+        request=PasswordConfirmSerializer,
+        responses={
+            200: PasswordConfirmResponseSerializer,
+        },
+    )
 
     def post(self, request, uidb64, token):
         
