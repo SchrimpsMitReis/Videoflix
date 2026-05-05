@@ -1,17 +1,19 @@
-# 🎬 Videoflix Backend
+# Create the README.md file with the provided content
 
-Ein Netflix-ähnliches Backend auf Basis von **Django REST Framework**, mit Video-Streaming über **HLS (m3u8 + ts Segmente)**, Authentifizierung und Mail-Verifikation.
+content = """# 🎬 Videoflix Backend
+
+A Netflix-like backend built with **Django REST Framework**, featuring video streaming via **HLS (m3u8 + ts segments)**, authentication, and email verification.
 
 ---
 
 ## 🚀 Features
 
 * 🔐 User Registration & Login (JWT / Cookie-based)
-* 📧 Account Activation via Email (MailHog im Dev)
-* 🎥 Video Upload & Verarbeitung (ffmpeg)
-* 📺 HLS Streaming (adaptive vorbereitbar)
-* 🖼️ Thumbnail-Handling
-* 🐳 Vollständig Docker-basiert
+* 📧 Account Activation via Email (MailHog in development)
+* 🎥 Video Upload & Processing (ffmpeg)
+* 📺 HLS Streaming (adaptive-ready)
+* 🖼️ Thumbnail Handling
+* 🐳 Fully Docker-based
 * ⚡ Background Jobs via Redis (django-rq)
 
 ---
@@ -24,33 +26,26 @@ Ein Netflix-ähnliches Backend auf Basis von **Django REST Framework**, mit Vide
 * Redis
 * Docker & Docker Compose
 * ffmpeg
-* MailHog (für Development E-Mails)
+* MailHog (for development emails)
 
 ---
 
 ## ⚙️ Installation (Development)
 
-### 1. Repository klonen
+### 1. Clone repository
 
-```bash
 git clone https://github.com/SchrimpsMitReis/Videoflix.git
 cd Videoflix
-```
 
 ---
 
-### 2. `.env` Datei erstellen
+### 2. Create `.env` file
 
-Erstelle eine `.env` basierend auf `.env.template`:
-
-```bash
 cp .env.template .env
-```
 
-Passe mindestens an:
+Adjust at least:
 
-```env
-SECRET_KEY=dein_geheimer_key
+SECRET_KEY=your_secret_key
 DEBUG=True
 
 DB_NAME=videoflix
@@ -58,79 +53,49 @@ DB_USER=postgres
 DB_PASSWORD=postgres
 DB_HOST=db
 DB_PORT=5432
-```
 
 ---
 
-### 3. Docker starten
+### 3. Start Docker
 
-```bash
 docker compose up --build
-```
 
 ---
 
-### 4. Migrationen ausführen
+### 4. Run migrations
 
-```bash
 docker compose exec web python manage.py migrate
-```
 
 ---
 
-### 5. Superuser erstellen (optional)
+### 5. Create superuser (optional)
 
-```bash
 docker compose exec web python manage.py createsuperuser
-```
 
-### 🧪 Optional: Lokales Development (für Editor / Debugging)
+---
 
-## Optional: Lokales Development Setup
+## 🧪 Optional: Local Development (for IDE / Debugging)
 
-Für bessere IDE-Unterstützung (z. B. VS Code Autocomplete):
-
-```md
 python -m venv env
-env\Scripts\activate  # Windows
+env\\Scripts\\activate  # Windows
 
 pip install -r requirements.txt
-```
 
 ---
 
 ## API Documentation (drf-spectacular)
 
 This project uses **drf-spectacular** to automatically generate an OpenAPI-compliant schema for the backend API.  
-The documentation is derived directly from Django REST Framework views and serializers and is enhanced with explicit annotations for custom logic such as cookie-based authentication and video streaming endpoints.
-
-### Swagger UI
-
-An interactive API documentation is available at:
+The documentation is derived directly from Django REST Framework views and serializers and is enhanced with explicit annotations for custom logic such as cookie-based authentication and video streaming endpoints.`
 
 ```
-/api/docs/
+Swagger UI: /api/docs/  
+Schema: /api/schema/
 ```
-
-
-### OpenAPI Schema
-
-The raw OpenAPI schema can be accessed at:
-
-```
-/api/schema/
-```
-
-
-### Notes
-
-- The documentation is generated directly from the codebase (views, serializers, and annotations)
-- Custom behaviors (e.g. cookie-based JWT authentication and HLS streaming) are explicitly documented
-- The schema can be used for client generation, API validation, or integration with external tools
 
 ---
 
-## 🌐 Zugriff
+## 🌐 Access
 
 | Service     | URL                         |
 | ----------- | --------------------------- |
@@ -140,141 +105,32 @@ The raw OpenAPI schema can be accessed at:
 
 ---
 
-## 📧 E-Mails (Development)
+## 📧 Emails (Development)
 
-E-Mails werden nicht wirklich versendet, sondern landen in:
+Emails are not actually sent but captured by:
 
-👉 http://localhost:8025
-
-Dort kannst du:
-
-* Aktivierungslinks kopieren
-* Passwort-Reset testen
+http://localhost:8025
 
 ---
 
 ## 🎥 Video Upload & Streaming
 
-### Upload
-
-Videos werden über die API hochgeladen und anschließend verarbeitet.
-
-### HLS Streaming
-
-Die Videos werden automatisch in HLS konvertiert:
-
-```text
 /api/video/<movie_id>/<resolution>/index.m3u8
-```
 
-Beispiel:
-
-```text
+Example:
 /api/video/1/480p/index.m3u8
-```
 
 ---
 
-## 🖼️ Media Files
+## ⚠️ Important Notes
 
-Media-Dateien werden über Django ausgeliefert:
-
-```text
-/media/...
-```
-
-Beispiel:
-
-```text
-http://localhost:8000/media/thumbnails/...
-```
+- Never commit your .env file
+- Disable DEBUG in production
 
 ---
 
-## ⚠️ Wichtige Hinweise
+## 👨‍💻 Author
 
-### CORS
+Roman Schröder  
+https://github.com/SchrimpsMitReis
 
-Für Frontend-Integration:
-
-```python
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:5500",
-    "http://127.0.0.1:5500",
-]
-```
-
----
-
-### Mail (Production)
-
-MailHog ist nur für Development gedacht.
-
-Für Produktion solltest du einen SMTP-Anbieter verwenden:
-
-* Brevo
-* Mailgun
-* SendGrid
-
----
-
-### Sicherheit
-
-* `.env` niemals committen!
-* `SECRET_KEY` geheim halten
-* DEBUG in Produktion deaktivieren
-
----
-
-## 🧪 Development Tipps
-
-### Datenbank zurücksetzen
-
-```bash
-docker compose down -v
-docker compose up --build
-```
-
----
-
-### Logs anzeigen
-
-```bash
-docker compose logs -f
-```
-
----
-
-### In Container gehen
-
-```bash
-docker compose exec web sh
-```
-
----
-
-## 📦 ToDo / Ideen
-
-* Adaptive Bitrate Streaming
-* CDN Integration
-* Upload Queue Optimierung
-* Frontend Integration
-
----
-
-## 👨‍💻 Autor
-
-Roman Schröder
-GitHub: https://github.com/SchrimpsMitReis
-
----
-
-## 🧠 Fun Fact
-
-Dieses Projekt ist Teil einer Backend-Lernreise mit Fokus auf:
-
-* skalierbare APIs
-* Videoverarbeitung
-* reale Produktionsprobleme 😄
-
----
