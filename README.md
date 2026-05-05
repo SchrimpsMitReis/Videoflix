@@ -33,53 +33,57 @@ A Netflix-like backend built with **Django REST Framework**, featuring video str
 ## ⚙️ Installation (Development)
 
 ### 1. Clone repository
-
+```
 git clone https://github.com/SchrimpsMitReis/Videoflix.git
 cd Videoflix
-
+```
 ---
 
 ### 2. Create `.env` file
-
+```
 cp .env.template .env
+```
 
 Adjust at least:
-
+```
 SECRET_KEY=your_secret_key
 DEBUG=True
-
 DB_NAME=videoflix
 DB_USER=postgres
 DB_PASSWORD=postgres
 DB_HOST=db
 DB_PORT=5432
+```
 
 ---
 
 ### 3. Start Docker
-
+```
 docker compose up --build
+```
 
 ---
 
 ### 4. Run migrations
-
+```
 docker compose exec web python manage.py migrate
+```
 
 ---
 
 ### 5. Create superuser (optional)
-
+```
 docker compose exec web python manage.py createsuperuser
+```
 
 ---
 
 ## 🧪 Optional: Local Development (for IDE / Debugging)
-
+```
 python -m venv env
 env\\Scripts\\activate  # Windows
-
 pip install -r requirements.txt
+```
 
 ---
 
@@ -108,18 +112,20 @@ Schema: /api/schema/
 ## 📧 Emails (Development)
 
 Emails are not actually sent but captured by:
-
+```
 http://localhost:8025
+```
 
 ---
 
 ## 🎥 Video Upload & Streaming
-
+```
 /api/video/<movie_id>/<resolution>/index.m3u8
-
+```
 Example:
+```
 /api/video/1/480p/index.m3u8
-
+```
 ---
 
 ## ⚠️ Important Notes
