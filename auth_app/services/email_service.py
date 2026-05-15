@@ -26,6 +26,7 @@ def send_activation_link(user):
         html_message=f"<h1>Aktiviere deinen Account</h1><a href='{activation_data['link']}'>Jetzt aktivieren</a>",
         fail_silently=False
     )
+    print("Mail was Sandy",user, activation_data)
     return activation_data
 
 
