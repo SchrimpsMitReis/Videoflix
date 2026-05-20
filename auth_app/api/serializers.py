@@ -52,7 +52,11 @@ class RegistrationSerializer(serializers.ModelSerializer):
         """
         pw = self.validated_data['password']
 
-        account = User(username=self.validated_data['email'],email=self.validated_data['email'])
+        account = User(
+            username=self.validated_data['email'],
+            email=self.validated_data['email'],
+            is_active=False,
+        )
         account.set_password(pw)
         account.save()
         return account
@@ -73,6 +77,7 @@ class ActivationSerializer(serializers.Serializer):
             raise serializers.ValidationError({"detail": "Invalid activation link."})        
         
         if not default_token_generator.check_token(user, token):
+            print("Token not ok!!!", token)
             raise serializers.ValidationError({"detail": "Invalid or expired token."})
         
         attrs["user"] = user

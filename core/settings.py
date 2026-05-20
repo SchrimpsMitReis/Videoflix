@@ -41,12 +41,20 @@ REDIS_LOCATION=os.environ.get("REDIS_LOCATION",default="")
 REDIS_PORT=os.environ.get("REDIS_PORT",default="")
 REDIS_DB=os.environ.get("REDIS_DB",default="")
 
-EMAIL_HOST=os.environ.get("EMAIL_HOST",default="")
-EMAIL_PORT=os.environ.get("EMAIL_PORT",default="")
-
-
-EMAIL_BACKEND = (
-    'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_BACKEND = os.environ.get(
+    "EMAIL_BACKEND",
+    "django.core.mail.backends.smtp.EmailBackend",
+)
+EMAIL_HOST = os.environ.get("EMAIL_HOST", default="")
+EMAIL_PORT = int(os.environ.get("EMAIL_PORT", default=25))
+EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER", default="")
+EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD", default="")
+EMAIL_USE_TLS = str_to_bool(os.environ.get("EMAIL_USE_TLS", default="False"))
+EMAIL_USE_SSL = str_to_bool(os.environ.get("EMAIL_USE_SSL", default="False"))
+EMAIL_TIMEOUT = int(os.environ.get("EMAIL_TIMEOUT", default=10))
+DEFAULT_FROM_EMAIL = os.environ.get(
+    "DEFAULT_FROM_EMAIL",
+    "noreply@videoflix.local",
 )
 BACKEND_BASE_URL = os.getenv("BACKEND_BASE_URL", "http://localhost:8000")
 FRONTEND_BASE_URL = os.getenv("FRONTEND_BASE_URL", "http://localhost:5500")
@@ -111,7 +119,10 @@ CORS_ALLOW_CREDENTIALS = True
 
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:4200",
+    "http://127.0.0.1:5500",
+    "http://localhost:5500",
 ]
+
 
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases

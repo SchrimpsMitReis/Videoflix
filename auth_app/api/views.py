@@ -1,7 +1,7 @@
 from rest_framework.views import APIView, Response
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework import status
-from auth_app.services.email_service import send_activation_link, send_password_reset_link
+from auth_app.services.email_service import generate_link, send_password_reset_link
 from auth_app.api.serializers import ActivationSerializer, PasswordConfirmSerializer, PasswordResetSerializer, RegistrationSerializer, LoginSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from auth_app.api.authentications import CookieJWTAuthentication
@@ -48,9 +48,7 @@ class RegistrationView(APIView):
         serializer = RegistrationSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         user = serializer.save()
-        user.is_active = False
-
-        activation_data = send_activation_link(user)
+        activation_data = generate_link(user, "activate")
 
         if DEV_MODE:
             return Response(
@@ -71,7 +69,6 @@ class RegistrationView(APIView):
                     "id": user.id,
                     "email": user.email
                 },
-                "token": activation_data['token']
             },
             status=status.HTTP_201_CREATED)
 

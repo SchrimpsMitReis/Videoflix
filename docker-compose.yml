@@ -34,16 +34,16 @@ services:
     depends_on:
       - db
       - redis
-      - mailhog
-    links:
-      - 'mailhog'
+      # - mailhog
+    # links:
+      # - 'mailhog'
 
-  mailhog:
-    image: mailhog/mailhog
-    container_name: mailhog
-    ports:
-      - "1025:1025" #127.0.0.1:1025:1025  
-      - "8025:8025"
+  # mailhog:
+  #   image: mailhog/mailhog
+  #   container_name: mailhog
+  #   ports:
+  #     - "1025:1025" #127.0.0.1:1025:1025  
+  #     - "8025:8025"
 
 
 volumes:
