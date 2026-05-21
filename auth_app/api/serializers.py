@@ -5,6 +5,7 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from django.contrib.auth.tokens import default_token_generator
 from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
+from rest_framework import status
 
 User = get_user_model()
 
@@ -106,7 +107,7 @@ class LoginSerializer(TokenObtainPairSerializer):
           
         if not user.check_password(password):
             print(password)
-            raise serializers.ValidationError("Ungültige Email oder Password")
+            raise serializers.ValidationError("Ungültige Email oder Password", status.HTTP_401_UNAUTHORIZED)
         
         if not user.is_active:
             raise serializers.ValidationError("Account not Activated")

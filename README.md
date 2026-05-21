@@ -64,19 +64,6 @@ docker compose up --build
 
 ---
 
-### 4. Run migrations
-```
-docker compose exec web python manage.py migrate
-```
-
----
-
-### 5. Create superuser (optional)
-```
-docker compose exec web python manage.py createsuperuser
-```
-
----
 
 ## 🧪 Optional: Local Development (for IDE / Debugging)
 ```
