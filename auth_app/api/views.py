@@ -7,6 +7,8 @@ from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from auth_app.api.authentications import CookieJWTAuthentication
 from rest_framework_simplejwt.tokens import RefreshToken
 from core.settings import DEV_MODE
+from django.conf import settings
+from django.middleware.csrf import get_token
 from drf_spectacular.utils import extend_schema
 from .schema import (
     LogoutErrorResponseSerializer,
@@ -160,11 +162,13 @@ class LoginView(TokenObtainPairView):
             status=status.HTTP_200_OK
         )
 
-        return self._set_cookies(
+        response = self._set_cookies(
             response=response,
             access=access,
             refresh=refresh
         )
+        get_token(request)
+        return response
     
     def _set_cookies(self, response, access, refresh):
         response.set_cookie(
@@ -254,7 +258,7 @@ class LogoutView(APIView):
     and blacklists the refresh token.
     """
     permission_classes = [IsAuthenticated]
-    authentication_classes = []
+    authentication_classes = [CookieJWTAuthentication]
 
     @extend_schema(
         tags=["Auth"],
@@ -291,20 +295,16 @@ class LogoutView(APIView):
         """
         Invalidate the refresh token and remove authentication cookies.
         """
-
-        try:
-
-            self._blacklist_refresh_token(request)
-            return self._create_success_response()
-
-        except Exception:
-            return Response({"error": "Invalid token"}, status=status.HTTP_400_BAD_REQUEST)
+        self._blacklist_refresh_token(request)
+        return self._create_success_response()
 
     def _blacklist_refresh_token(self, request):
         """
         Add the refresh token to the blacklist so it can no longer be used.
         """
         refresh_token = request.COOKIES.get("refresh_token")
+        if not refresh_token:
+            return
         refresh_token_to_delete = RefreshToken(refresh_token)
         refresh_token_to_delete.blacklist()
 
@@ -315,10 +315,19 @@ class LogoutView(APIView):
         )
         response.delete_cookie(
             key="access_token",
-            path="/")
+            path="/",
+            samesite="Lax",
+        )
         response.delete_cookie(
             key="refresh_token",
-            path="/"
+            path="/",
+            samesite="Lax",
+        )
+        response.delete_cookie(
+            key=settings.CSRF_COOKIE_NAME,
+            path=settings.CSRF_COOKIE_PATH,
+            domain=settings.CSRF_COOKIE_DOMAIN,
+            samesite=settings.CSRF_COOKIE_SAMESITE,
         )
 
         return response
