@@ -1,8 +1,9 @@
-from django.core.mail import send_mail
-from django.utils.http import urlsafe_base64_encode
-from django.utils.encoding import force_bytes
-from django.contrib.auth.tokens import default_token_generator
 from django.conf import settings
+from django.contrib.auth.tokens import default_token_generator
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_encode
 
 
 def get_sender_email():
@@ -14,42 +15,74 @@ def get_sender_email():
 def generate_link(user, path):
     uidb64 = urlsafe_base64_encode(force_bytes(user.id))
     token = default_token_generator.make_token(user)
-    token_ok = default_token_generator.check_token(user, token)
-    if token_ok:
-        print("token ok", token)
-        #d8obns-52339f86aa6212bd35201f2f0da34e46
-        #d8obns-52339f86aa6212bd35201f2f0da34e46
-        #http://127.0.0.1:5500/pages/auth/activate.html?uid=MTM&token=d8obns-52339f86aa6212bd35201f2f0da34e46
     link = f"{settings.FRONTEND_BASE_URL}/pages/auth/{path}.html?uid={uidb64}&token={token}"
-    activation_data = {
+    return {
         "link": link,
-        "token": token
-     }
-    return activation_data
+        "token": token,
+    }
+
+
+def render_action_email(user, activation_data, title, intro_text, button_text):
+    return render_to_string(
+        "email/videoflix_action_email.html",
+        {
+            "title": title,
+            "user_name": user.get_full_name() or user.email or user.username,
+            "intro_text": intro_text,
+            "button_text": button_text,
+            "action_url": activation_data["link"],
+        },
+    )
+
+
+def send_action_email(user, subject, message, html_message):
+    send_mail(
+        subject=subject,
+        message=message,
+        from_email=get_sender_email(),
+        recipient_list=[user.email],
+        html_message=html_message,
+        fail_silently=False,
+    )
+
 
 def send_activation_link(user):
     activation_data = generate_link(user, "activate")
-    send_mail(
-        subject="Aktiviere deinen Account",
-        message=f"Klick auf den Link: {activation_data['link']}",
-        from_email=get_sender_email(),
-        recipient_list=[user.email],
-        html_message=f"<h1>Aktiviere deinen Account</h1><a href='{activation_data['link']}'>Jetzt aktivieren</a>",
-        fail_silently=False
+    html_message = render_action_email(
+        user=user,
+        activation_data=activation_data,
+        title="Confirm your email",
+        intro_text=(
+            "Thank you for registering with Videoflix. To complete your registration "
+            "and verify your email address, please click the link below:"
+        ),
+        button_text="Activate account",
     )
-    print("Mail was Sandy",user, activation_data)
+    send_action_email(
+        user=user,
+        subject="Confirm your email",
+        message=f"Activate your Videoflix account: {activation_data['link']}",
+        html_message=html_message,
+    )
     return activation_data
 
 
 def send_password_reset_link(user):
     activation_data = generate_link(user, "password_confirm")
-
-    send_mail(
-        subject="Passwort zurücksetzen",
-        message=f"Klick auf den Link: {activation_data['link']}",
-        from_email=get_sender_email(),
-        recipient_list=[user.email],
-        html_message=f"<h1>Passwort zurücksetzen</h1><a href='{activation_data['link']}'>Jetzt zurücksetzen</a>",
-        fail_silently=False
+    html_message = render_action_email(
+        user=user,
+        activation_data=activation_data,
+        title="Reset your password",
+        intro_text=(
+            "We received a request to reset your Videoflix password. To choose a new "
+            "password, please click the link below:"
+        ),
+        button_text="Reset password",
+    )
+    send_action_email(
+        user=user,
+        subject="Reset your password",
+        message=f"Reset your Videoflix password: {activation_data['link']}",
+        html_message=html_message,
     )
     return activation_data
