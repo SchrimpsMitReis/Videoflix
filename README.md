@@ -74,6 +74,22 @@ pip install -r requirements.txt
 
 ---
 
+### Migrations (optional)
+
+```bash
+docker compose exec web python manage.py migrate
+```
+
+---
+q
+### 5. Create Superuser (optional)
+
+```bash
+docker compose exec web python manage.py createsuperuser
+```
+
+
+
 ## API Documentation (drf-spectacular)
 
 This project uses **drf-spectacular** to automatically generate an OpenAPI-compliant schema for the backend API.  
