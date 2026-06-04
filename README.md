@@ -66,7 +66,26 @@ pip install -r requirements.txt
 
 ---
 
-### 4. Start Docker
+### 4. Email Backend
+
+Set the your Email Configurations in the .env (e.g. AOL Mail)
+
+```
+EMAIL_HOST=imap.aol.com
+EMAIL_PORT=465
+EMAIL_HOST_USER=yourAccount@aol.de
+EMAIL_HOST_PASSWORD=appPassword123
+EMAIL_USE_TLS=False
+EMAIL_USE_SSL=True
+EMAIL_TIMEOUT=10
+DEFAULT_FROM_EMAIL=
+
+```
+Many Email Providers can give you an App Password so you dont have to user your real password in here.
+
+
+---
+### 5. Start Docker
 
 Start Docker Desktop
 
@@ -85,7 +104,7 @@ docker compose exec web python manage.py migrate
 
 ---
 q
-### 5. Create Superuser (optional)
+### Create Superuser (optional)
 
 ```bash
 docker compose exec web python manage.py createsuperuser
@@ -116,6 +135,23 @@ Schema: /api/schema/
 ---
 
 ## 📧 Emails (Development) -  MailHog
+
+For using Mailhoch recomment in the docker-compose.yml
+
+```
+      # - mailhog
+    # links:
+      # - 'mailhog'
+
+  # mailhog:
+  #   image: mailhog/mailhog
+  #   container_name: mailhog
+  #   ports:
+  #     - "1025:1025" #127.0.0.1:1025:1025  
+  #     - "8025:8025"
+
+```
+
 Emails are not actually sent but captured by:
 ```
 http://localhost:8025
