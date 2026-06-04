@@ -71,7 +71,7 @@ pip install -r requirements.txt
 Set the your Email Configurations in the .env (e.g. AOL Mail)
 
 ```
-EMAIL_HOST=imap.aol.com
+EMAIL_HOST=smtp.aol.com
 EMAIL_PORT=465
 EMAIL_HOST_USER=yourAccount@aol.de
 EMAIL_HOST_PASSWORD=appPassword123
@@ -180,4 +180,3 @@ Example:
 
 Roman Schröder  
 https://github.com/SchrimpsMitReis
-
