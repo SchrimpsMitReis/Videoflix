@@ -54,18 +54,10 @@ DB_PASSWORD=postgres
 DB_HOST=db
 DB_PORT=5432
 ```
-
 ---
 
-### 3. Start Docker
-```
-docker compose up --build
-```
+### 3. Set environemt for Local Development (for IDE / Debugging)
 
----
-
-
-## 🧪 Optional: Local Development (for IDE / Debugging)
 ```
 python -m venv env
 env\\Scripts\\activate  # Windows
@@ -73,6 +65,17 @@ pip install -r requirements.txt
 ```
 
 ---
+
+### 4. Start Docker
+
+Start Docker Desktop
+
+```
+docker compose up --build
+```
+
+---
+
 
 ### Migrations (optional)
 
@@ -112,8 +115,7 @@ Schema: /api/schema/
 
 ---
 
-## 📧 Emails (Development)
-
+## 📧 Emails (Development) -  MailHog
 Emails are not actually sent but captured by:
 ```
 http://localhost:8025
