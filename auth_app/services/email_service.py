@@ -68,7 +68,7 @@ def send_activation_link(user):
 
 
 def send_password_reset_link(user):
-    activation_data = generate_link(user, "password_confirm")
+    activation_data = generate_link(user, "confirm_password")
     html_message = render_action_email(
         user=user,
         activation_data=activation_data,

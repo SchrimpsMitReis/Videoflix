@@ -405,8 +405,6 @@ class PasswordConfirmView(APIView):
 
     def post(self, request, uidb64, token):
         
-        print("PASSWORD RESET VIEW WIRD GETROFFEN")
-
         data = self._combine_url_credentials_to_request_data(request, uidb64, token)
         serializer = PasswordConfirmSerializer(data=data)
         serializer.is_valid(raise_exception=True)
