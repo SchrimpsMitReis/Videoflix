@@ -2,6 +2,9 @@ import subprocess
 import sys
 from pathlib import Path
 
+"""
+Bei der Entwicklung ist ab und zu der Worker abgeraucht, hier sind ein paar Nützliche Tools um den zu resetten
+"""
 
 PROJECT_DIR = Path(
     r"C:\Users\TheSu\OneDrive\Dokumente\Coding\Developer Akademie\Backend 11 - Backend für Businessapps\Videoflix")
