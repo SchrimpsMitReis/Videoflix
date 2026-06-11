@@ -20,7 +20,9 @@ class Video(models.Model):
     thumbnail_url = models.FileField(upload_to='thumbnails/')
     category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='Drama')
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
     video_file = models.FileField(upload_to='video/', blank=False, null=False)
+    resolutions = models.JSONField(default=list, blank=True)
 
     def __str__(self):
         return self.title

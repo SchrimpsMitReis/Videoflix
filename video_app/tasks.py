@@ -34,6 +34,8 @@ def convert_480p(video_id):
             "-i", source,
             "-vf", "scale=-2:480",
             "-c:v", "libx264",
+            "-pix_fmt", "yuv420p",
+            "-profile:v", "high",
             "-crf", "23",
             "-preset", "fast",
             "-c:a", "aac",
@@ -54,55 +56,6 @@ def convert_480p(video_id):
 
     return target
 
-
-def convert_to_hls(video_id, resolution, codec):
-    video = Video.objects.get(id=video_id)
-    source = video.video_file.path
-
-    base, _ = os.path.splitext(source)
-    video_name = os.path.basename(base)
-
-    output_dir = base + "_480p_hls"
-    os.makedirs(output_dir, exist_ok=True)
-
-    playlist_path = os.path.join(output_dir, f"{video_name}_480p.m3u8")
-    segment_pattern = os.path.join(output_dir, f"{video_name}_480p_%03d.ts")
-
-    result = subprocess.run(
-        [
-            "ffmpeg",
-            "-y",
-            "-nostdin",
-            "-i", source,
-            "-vf", "scale=-2:480",
-            "-c:v", "libx264",
-            "-crf", "23",
-            "-preset", "fast",
-            "-c:a", "aac",
-            "-b:a", "128k",
-            "-hls_time", "6",
-            "-hls_list_size", "0",
-            "-hls_playlist_type", "vod",
-            "-hls_segment_filename", segment_pattern,
-            playlist_path,
-        ],
-        capture_output=True,
-        text=True,
-        timeout=120,
-    )
-
-    print("RETURN CODE:", result.returncode)
-    print("STDERR:", result.stderr)
-
-    if result.returncode != 0:
-        raise RuntimeError(result.stderr)
-
-    return {
-        "output_dir": output_dir,
-        "playlist": playlist_path,
-    }
-
-# valid_heights = [h for h in TARGET_HEIGHTS if h <= source_height]
 
 
 def get_video_height(video_path):
@@ -147,13 +100,14 @@ def convert_to_hls(video_id):
     os.makedirs(output_root, exist_ok=True)
 
     variants = []
-
+    
     for height in valid_heights:
         variant_info = convert_single_hls_variant(source, output_root, height)
         variants.append(variant_info)
 
     create_master_playlist(output_root, variants, base_name)
 
+    save_resolutions_to_video(video, valid_heights)
 
 def convert_single_hls_variant(source, output_root, height):
     base_name = os.path.splitext(os.path.basename(source))[0]
@@ -171,6 +125,8 @@ def convert_single_hls_variant(source, output_root, height):
             "-i", source,
             "-vf", f"scale=-2:{height}",
             "-c:v", "libx264",
+            "-pix_fmt", "yuv420p",
+            "-profile:v", "high",
             "-preset", "fast",
             "-crf", "23",
             "-c:a", "aac",
@@ -196,7 +152,6 @@ def convert_single_hls_variant(source, output_root, height):
         "playlist_name": playlist_name,
     }
 
-
 def create_master_playlist(output_root, variants, base_name):
     master_path = os.path.join(output_root, f"{base_name}master.m3u8")
 
@@ -215,3 +170,9 @@ def create_master_playlist(output_root, variants, base_name):
 
     with open(master_path, "w", encoding="utf-8") as f:
         f.write("\n".join(lines))
+
+
+def save_resolutions_to_video(video, valid_heights):
+    video.resolutions = valid_heights
+    video.save(update_fields=["resolutions"])
+    return video

@@ -58,7 +58,7 @@ class VideoStreamView(APIView):
 
     def get(self, request, movie_id, resolution):
         video = Video.objects.get(id=movie_id)
-
+        resolution = _check_resolution_in_resolutions(video, resolution)
         base_path = video.video_file.path 
         base, _ = os.path.splitext(base_path)
         playlist_path = os.path.join(
@@ -66,6 +66,7 @@ class VideoStreamView(APIView):
             f"{os.path.basename(base)}_{resolution}.m3u8"
         )
         
+
         if not os.path.exists(playlist_path):
             raise Http404("Video oder Manifest nicht gefunden")
 
@@ -73,6 +74,7 @@ class VideoStreamView(APIView):
             open(playlist_path, "rb"),
             content_type="application/vnd.apple.mpegurl"
         )
+    
     
 class VideoStreamSegmentView(APIView):
 
@@ -124,3 +126,21 @@ class VideoStreamSegmentView(APIView):
             open(segment_path, "rb"),
             content_type="video/mp2t"
         )    
+
+
+def _check_resolution_in_resolutions(video, resolution):
+    try:
+        requested_height = int(resolution.removesuffix("p"))
+        available_heights = [int(height) for height in video.resolutions]
+        print(available_heights)
+    except (AttributeError, TypeError, ValueError):
+        raise Http404("Ungültige oder nicht verfügbare Auflösung")
+
+    valid_heights = [
+        height for height in available_heights if height <= requested_height
+    ]
+
+    if not valid_heights:
+        raise Http404("Keine passende Auflösung verfügbar")
+
+    return f"{max(valid_heights)}p"
