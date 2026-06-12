@@ -4,6 +4,8 @@ import subprocess
 from video_app.models import Video
 
 def convert_to_hls(video_id):
+    """Inspect and print the dimensions of a video's primary stream."""
+
     video = Video.objects.get(id=video_id)
     path = video.video_file.path
 

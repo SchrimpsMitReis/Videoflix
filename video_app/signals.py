@@ -12,6 +12,8 @@ resolutions = [144, 240, 360, 480, 720, 1080, 1440, 2160]
 
 @receiver(post_save, sender=Video)
 def video_post_save(sender, instance, created, **kwargs):
+    """Queue HLS conversion after a new video is created."""
+
     if not created:
         return
 
@@ -21,8 +23,9 @@ def video_post_save(sender, instance, created, **kwargs):
 
 @receiver(post_delete, sender=Video)
 def video_delete_file_on_delete(sender, instance, **kwargs):
+    """Delete the uploaded source file after its video record is removed."""
+
     if instance.video_file and os.path.isfile(instance.video_file.path):
         os.remove(instance.video_file.path)
-
 
 

@@ -12,6 +12,7 @@ from video_app.models import Video
 
 
 class VideoListView(APIView):
+    """Return all videos available in the catalog."""
 
     @extend_schema(
         tags=["Video"],
@@ -24,6 +25,8 @@ class VideoListView(APIView):
     )
 
     def get(self, request):
+        """Serialize and return the complete video list."""
+
         queryset = Video.objects.all()
         serializer = VideoSerializer(queryset, many=True, context={"request": request})
         return Response(serializer.data)
@@ -31,6 +34,7 @@ class VideoListView(APIView):
     
 
 class VideoStreamView(APIView):
+    """Serve an HLS media playlist for a requested video resolution."""
 
     @extend_schema(
         tags=["Video"],
@@ -57,6 +61,8 @@ class VideoStreamView(APIView):
     )
 
     def get(self, request, movie_id, resolution):
+        """Resolve and return the closest available HLS playlist."""
+
         video = Video.objects.get(id=movie_id)
         resolution = _check_resolution_in_resolutions(video, resolution)
         base_path = video.video_file.path 
@@ -77,6 +83,7 @@ class VideoStreamView(APIView):
     
     
 class VideoStreamSegmentView(APIView):
+    """Serve individual transport-stream segments used by HLS playback."""
 
     @extend_schema(
         tags=["Video"],
@@ -109,6 +116,8 @@ class VideoStreamSegmentView(APIView):
     )
 
     def get(self, request, movie_id, resolution, segment):
+        """Resolve and return a requested HLS segment file."""
+
         video = Video.objects.get(id=movie_id)
 
         base_path = video.video_file.path
@@ -129,6 +138,8 @@ class VideoStreamSegmentView(APIView):
 
 
 def _check_resolution_in_resolutions(video, resolution):
+    """Select the highest available resolution up to the requested height."""
+
     try:
         requested_height = int(resolution.removesuffix("p"))
         available_heights = [int(height) for height in video.resolutions]

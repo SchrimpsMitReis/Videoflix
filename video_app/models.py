@@ -15,6 +15,8 @@ CATEGORY_CHOICES = [
 ]
 
 class Video(models.Model):
+    """Store video metadata, source files, thumbnails, and HLS resolutions."""
+
     title = models.CharField(max_length=200)
     description = models.TextField(blank=True, null=True)
     thumbnail_url = models.FileField(upload_to='thumbnails/')
@@ -25,4 +27,6 @@ class Video(models.Model):
     resolutions = models.JSONField(default=list, blank=True)
 
     def __str__(self):
+        """Return the video title for human-readable representations."""
+
         return self.title

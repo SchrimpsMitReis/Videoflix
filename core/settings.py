@@ -18,6 +18,8 @@ load_dotenv()
 
 
 def env_list(name, default=""):
+    """Read a comma-separated environment variable as a clean list."""
+
     return [
         item.strip()
         for item in os.environ.get(name, default).split(",")

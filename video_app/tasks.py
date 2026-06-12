@@ -17,6 +17,8 @@ TARGETS = {
 
 
 def convert_480p(video_id):
+    """Create a standalone 480p MP4 copy of the selected video."""
+
     video = Video.objects.get(id=video_id)
     source = video.video_file.path
 
@@ -59,6 +61,8 @@ def convert_480p(video_id):
 
 
 def get_video_height(video_path):
+    """Read the source video's height with ffprobe."""
+
     result = subprocess.run(
         [
             "ffprobe",
@@ -88,6 +92,8 @@ def get_video_height(video_path):
 
 
 def convert_to_hls(video_id):
+    """Convert a source video into all supported HLS variants."""
+
     video = Video.objects.get(id=video_id)
     source = video.video_file.path
     base_name = os.path.splitext(os.path.basename(source))[0]
@@ -110,6 +116,8 @@ def convert_to_hls(video_id):
     save_resolutions_to_video(video, valid_heights)
 
 def convert_single_hls_variant(source, output_root, height):
+    """Create one HLS playlist and its segments for a target height."""
+
     base_name = os.path.splitext(os.path.basename(source))[0]
 
     playlist_name = f"{base_name}_{height}p.m3u8"
@@ -153,6 +161,8 @@ def convert_single_hls_variant(source, output_root, height):
     }
 
 def create_master_playlist(output_root, variants, base_name):
+    """Write the HLS master playlist referencing all generated variants."""
+
     master_path = os.path.join(output_root, f"{base_name}master.m3u8")
 
     lines = [
@@ -173,6 +183,8 @@ def create_master_playlist(output_root, variants, base_name):
 
 
 def save_resolutions_to_video(video, valid_heights):
+    """Persist the successfully generated resolution heights on the video."""
+
     video.resolutions = valid_heights
     video.save(update_fields=["resolutions"])
     return video

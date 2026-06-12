@@ -18,6 +18,8 @@ class RegistrationSerializer(serializers.ModelSerializer):
     confirmed_password = serializers.CharField(write_only=True)
 
     class Meta:
+        """Configure writable registration fields and sensitive inputs."""
+
         model = User
         fields = ['email', 'password', 'confirmed_password']
         
@@ -63,11 +65,14 @@ class RegistrationSerializer(serializers.ModelSerializer):
         return account
 
 class ActivationSerializer(serializers.Serializer):
+    """Validate an account activation user ID and signed token."""
     
     uidb64 = serializers.CharField()
     token = serializers.CharField()
     
     def validate(self, attrs):
+        """Resolve the user and verify the submitted activation token."""
+
         uidb64 = attrs.get('uidb64')
         token = attrs.get('token')
 
@@ -85,18 +90,21 @@ class ActivationSerializer(serializers.Serializer):
         return attrs
     
 class LoginSerializer(TokenObtainPairSerializer):
+    """Authenticate users by email and create a JWT token pair."""
         
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
 
 
     def __init__(self, *args, **kwargs):
+        """Replace the inherited username input with the email field."""
         super().__init__(*args, **kwargs)
         if "username" in self.fields:
             del self.fields["username"]
 
     
     def validate(self, attrs):
+        """Validate credentials and return the generated token pair."""
         email = attrs.get('email')
         password = attrs.get('password')
 
@@ -118,10 +126,12 @@ class LoginSerializer(TokenObtainPairSerializer):
         return data
     
 class PasswordResetSerializer(serializers.Serializer):
+    """Validate that a password-reset email belongs to an existing user."""
 
     email = serializers.EmailField()
 
     def validate(self, attrs):
+        """Attach the matching user to the validated reset request."""
 
         email = attrs.get('email')
 
@@ -135,6 +145,7 @@ class PasswordResetSerializer(serializers.Serializer):
         return attrs
 
 class PasswordConfirmSerializer(serializers.Serializer):
+    """Validate a password-reset token and persist the new password."""
 
     uidb64 = serializers.CharField()
     token = serializers.CharField()
@@ -142,6 +153,7 @@ class PasswordConfirmSerializer(serializers.Serializer):
     confirm_password = serializers.CharField()
 
     def validate(self, attrs):
+        """Validate reset credentials and update the user's password."""
         uidb64 = attrs.get('uidb64')
         token = attrs.get('token')
         new_password = attrs.get('new_password')
@@ -151,6 +163,7 @@ class PasswordConfirmSerializer(serializers.Serializer):
         return attrs
     
     def _convert_and_check_user_id(self,uidb64):
+        """Decode the URL-safe user ID and load its user."""
         try:
           user_id =  force_str(urlsafe_base64_decode(uidb64))
           user = User.objects.get(pk=user_id)
@@ -159,19 +172,23 @@ class PasswordConfirmSerializer(serializers.Serializer):
         return user
 
     def _save_user_and_password(self, user, new_password):
+        """Hash and save the user's new password."""
         user.set_password(new_password)
         user.save()
         return user
 
     def _check_token(self, user, token):
+        """Reject an invalid or expired password-reset token."""
         if not default_token_generator.check_token(user, token):
             raise serializers.ValidationError({"detail": "Invalid or expired token."})
 
     def _check_password(self, new_password,confirm_password):
+        """Ensure both submitted passwords match."""
         if not new_password == confirm_password:
             raise serializers.ValidationError({"detail": "Password dont match"})
 
     def _check_attrs(self, uidb64, token,new_password,confirm_password):
+        """Run all password-confirmation validation steps."""
         user = self._convert_and_check_user_id(uidb64)
         self._check_token(user,token)
         self._check_password(new_password,confirm_password)

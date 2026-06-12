@@ -36,7 +36,7 @@ H264_1440P = CodecProfile(
     audio_codec="aac",
     height=1440,
     audio_bitrate="192k",
-    crf=22,  # leicht bessere Qualität
+    crf=22,  # Slightly higher quality.
     preset="fast",
 )
 
@@ -46,6 +46,6 @@ H264_4K = CodecProfile(
     audio_codec="aac",
     height=2160,
     audio_bitrate="256k",
-    crf=20,  # bessere Qualität für 4K
-    preset="slow",  # effizienter bei großen Videos
+    crf=20,  # Higher quality for 4K.
+    preset="slow",  # More efficient for large videos.
 )

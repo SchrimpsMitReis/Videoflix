@@ -5,16 +5,19 @@ from video_app.models import Video
 
 
 class VideoSerializer(serializers.ModelSerializer):
+    """Serialize video metadata with an absolute thumbnail URL."""
+
     thumbnail = serializers.SerializerMethodField()
 
     class Meta:
+        """Expose all video model fields through the API."""
+
         model = Video
         fields = '__all__'
 
     def get_thumbnail(self, obj):
-        """
-        The given Frontend allways trys to get the image with its domain so the request_url must be absolute!
-        """
+        """Return an absolute thumbnail URL for the frontend."""
+
         request = self.context.get("request")
 
         if obj.thumbnail_url:

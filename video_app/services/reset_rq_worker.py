@@ -2,9 +2,7 @@ import subprocess
 import sys
 from pathlib import Path
 
-"""
-Bei der Entwicklung ist ab und zu der Worker abgeraucht, hier sind ein paar Nützliche Tools um den zu resetten
-"""
+"""Development utilities for resetting the RQ worker."""
 
 PROJECT_DIR = Path(
     r"C:\Users\TheSu\OneDrive\Dokumente\Coding\Developer Akademie\Backend 11 - Backend für Businessapps\Videoflix")
@@ -13,6 +11,8 @@ QUEUE_NAME = "default"
 
 
 def run_command(command: list[str], check: bool = True) -> subprocess.CompletedProcess:
+    """Run a command from the project directory and capture its output."""
+
     print(f"\n>> {' '.join(command)}")
     return subprocess.run(
         command,
@@ -24,6 +24,8 @@ def run_command(command: list[str], check: bool = True) -> subprocess.CompletedP
 
 
 def kill_rqworker() -> None:
+    """Stop active RQ worker processes inside the web container."""
+
     try:
         result = run_command(
             ["docker", "compose", "exec", WEB_SERVICE, "pkill", "-f", "rqworker"],
@@ -40,6 +42,8 @@ def kill_rqworker() -> None:
 
 
 def clear_queue_and_failed_jobs() -> None:
+    """Remove queued jobs and delete entries from the failed-job registry."""
+
     python_code = f"""
     import django_rq
     
@@ -64,7 +68,9 @@ def clear_queue_and_failed_jobs() -> None:
 
 
 def start_rqworker() -> None:
-    # Startet den Worker im Hintergrund im Container
+    """Start a detached RQ worker inside the web container."""
+
+    # Start the worker in the background inside the container.
     command = (
         f"nohup python manage.py rqworker {QUEUE_NAME} "
         f"> /tmp/rqworker.log 2>&1 &"
@@ -81,6 +87,8 @@ def start_rqworker() -> None:
 
 
 def show_worker_processes() -> None:
+    """Print the currently running RQ worker processes."""
+
     result = run_command(
         ["docker", "compose", "exec", WEB_SERVICE,
             "sh", "-c", "ps aux | grep rqworker"],
@@ -93,6 +101,8 @@ def show_worker_processes() -> None:
 
 
 def main() -> int:
+    """Reset the queue worker and return a process-style exit code."""
+
     try:
         kill_rqworker()
         clear_queue_and_failed_jobs()

@@ -12,6 +12,8 @@ User = get_user_model()
 
 @receiver(post_save, sender=User)
 def user_post_save(sender, instance, created, **kwargs):
+    """Normalize new users and enqueue an activation email after commit."""
+
     if not created:
         return
     if not instance.email:

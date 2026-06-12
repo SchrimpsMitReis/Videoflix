@@ -1,10 +1,10 @@
 from rest_framework.views import APIView, Response
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny
 from rest_framework import status
 from auth_app.services.email_service import generate_link, send_password_reset_link
 from auth_app.api.serializers import ActivationSerializer, PasswordConfirmSerializer, PasswordResetSerializer, RegistrationSerializer, LoginSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
-from auth_app.api.authentications import CookieJWTAuthentication
+from rest_framework_simplejwt.exceptions import TokenError
 from rest_framework_simplejwt.tokens import RefreshToken
 from core.settings import DEV_MODE
 from django.conf import settings
@@ -108,6 +108,7 @@ class ActivationView(APIView):
     )
 
     def get(self, request, uidb64, token):
+        """Activate the account identified by a valid signed URL."""
 
         data = {
             'uidb64': uidb64,
@@ -126,6 +127,8 @@ class ActivationView(APIView):
         )
 
 class LoginView(TokenObtainPairView):
+    """Authenticate a user and store the generated JWTs in cookies."""
+
     serializer_class = LoginSerializer
     permission_classes = [AllowAny]
 
@@ -143,6 +146,7 @@ class LoginView(TokenObtainPairView):
         },)
 
     def post(self, request, *args, **kwargs):
+        """Validate credentials and return a response containing JWT cookies."""
 
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
@@ -171,6 +175,8 @@ class LoginView(TokenObtainPairView):
         return response
     
     def _set_cookies(self, response, access, refresh):
+        """Attach access and refresh tokens as HTTP-only response cookies."""
+
         response.set_cookie(
             key="access_token",
             value=access,
@@ -202,7 +208,7 @@ class CookieTokenRefreshView(TokenRefreshView):
             "Generates a new access token using the refresh_token stored in cookies. "
             "Sets a new access_token cookie if successful."
         ),
-        # ❗ kein request body nötig → kommt aus Cookie
+        # No request body is required because the refresh token comes from a cookie.
         request=None,
         parameters=[
             OpenApiParameter(
@@ -247,8 +253,9 @@ class CookieTokenRefreshView(TokenRefreshView):
             key="access_token",
             value=access_token,
             httponly=True,
-            secure=True,
-            samesite="LAX"
+            secure=False,
+            samesite="Lax",
+            path="/"
         )
         return response
 
@@ -257,8 +264,8 @@ class LogoutView(APIView):
     Logout endpoint that deletes authentication cookies
     and blacklists the refresh token.
     """
-    permission_classes = [IsAuthenticated]
-    authentication_classes = [CookieJWTAuthentication]
+    permission_classes = [AllowAny]
+    authentication_classes = []
 
     @extend_schema(
         tags=["Auth"],
@@ -274,14 +281,14 @@ class LogoutView(APIView):
                 name="refresh_token",
                 type=str,
                 location=OpenApiParameter.COOKIE,
-                required=True,
+                required=False,
                 description="JWT refresh token stored in HttpOnly cookie.",
             ),
             OpenApiParameter(
                 name="access_token",
                 type=str,
                 location=OpenApiParameter.COOKIE,
-                required=True,
+                required=False,
                 description="JWT access token stored in HttpOnly cookie.",
             ),
         ],
@@ -305,10 +312,15 @@ class LogoutView(APIView):
         refresh_token = request.COOKIES.get("refresh_token")
         if not refresh_token:
             return
-        refresh_token_to_delete = RefreshToken(refresh_token)
-        refresh_token_to_delete.blacklist()
+        try:
+            refresh_token_to_delete = RefreshToken(refresh_token)
+            refresh_token_to_delete.blacklist()
+        except TokenError:
+            pass
 
     def _create_success_response(self):
+        """Create a successful response that expires all authentication cookies."""
+
         response = Response(
             {"detail": "Logout successful! All tokens will be deleted. Refresh token is now invalid."},
             status=status.HTTP_200_OK
@@ -333,6 +345,7 @@ class LogoutView(APIView):
         return response
 
 class PasswordResetView(APIView):
+    """Accept password-reset requests and send the reset email."""
 
     permission_classes = [AllowAny]
     authentication_classes = []
@@ -372,6 +385,7 @@ class PasswordResetView(APIView):
             status=status.HTTP_200_OK)
 
 class PasswordConfirmView(APIView):
+    """Validate a password-reset link and save the submitted password."""
 
     permission_classes = [AllowAny]
 
@@ -404,6 +418,7 @@ class PasswordConfirmView(APIView):
     )
 
     def post(self, request, uidb64, token):
+        """Validate reset credentials and persist the new password."""
         
         data = self._combine_url_credentials_to_request_data(request, uidb64, token)
         serializer = PasswordConfirmSerializer(data=data)
@@ -415,6 +430,8 @@ class PasswordConfirmView(APIView):
         )
     
     def _combine_url_credentials_to_request_data(self, request, uidb64, token):
+        """Merge reset credentials from the URL into the request data."""
+
         data = request.data
         data['uidb64'] = uidb64
         data['token'] = token

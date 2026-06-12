@@ -56,17 +56,30 @@ DB_PORT=5432
 ```
 ---
 
-### 3. Set environemt for Local Development (for IDE / Debugging)
+### 3. Configure VS Code for Development
 
+This project runs fully inside Docker. A local Python virtual environment such
+as `env`, `venv`, or `.venv` is not required.
+
+For Python autocomplete, linting, testing, and debugging in VS Code:
+
+1. Install the **Dev Containers** extension.
+2. Open the project folder in VS Code.
+3. Run **Dev Containers: Rebuild and Reopen in Container** from the command palette.
+
+VS Code will then use `/usr/local/bin/python` and the dependencies installed
+inside the `web` container. Run Django commands through Docker Compose:
+
+```bash
+docker compose exec web python manage.py <command>
 ```
-python -m venv env
-env\\Scripts\\activate  # Windows
-pip install -r requirements.txt
-```
+
+> `.env` is the project's environment configuration file. It is unrelated to
+> the optional Python virtual-environment folders named `env` or `venv`.
 
 ---
 
-### 4. Email Backend
+### 4. Configure Email Backend
 
 Set the your Email Configurations in the .env (e.g. AOL Mail)
 

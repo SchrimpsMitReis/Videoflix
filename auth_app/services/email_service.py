@@ -7,12 +7,16 @@ from django.utils.http import urlsafe_base64_encode
 
 
 def get_sender_email():
+    """Return the configured sender address for outgoing application emails."""
+
     if settings.DEFAULT_FROM_EMAIL and settings.DEFAULT_FROM_EMAIL != "noreply@videoflix.local":
         return settings.DEFAULT_FROM_EMAIL
     return settings.EMAIL_HOST_USER
 
 
 def generate_link(user, path):
+    """Create a signed frontend action link for the given user."""
+
     uidb64 = urlsafe_base64_encode(force_bytes(user.id))
     token = default_token_generator.make_token(user)
     link = f"{settings.FRONTEND_BASE_URL}/pages/auth/{path}.html?uid={uidb64}&token={token}"
@@ -23,6 +27,8 @@ def generate_link(user, path):
 
 
 def render_action_email(user, activation_data, title, intro_text, button_text):
+    """Render the shared HTML template for account-related emails."""
+
     return render_to_string(
         "email/videoflix_action_email.html",
         {
@@ -36,6 +42,8 @@ def render_action_email(user, activation_data, title, intro_text, button_text):
 
 
 def send_action_email(user, subject, message, html_message):
+    """Send a plain-text and HTML email to the given user."""
+
     send_mail(
         subject=subject,
         message=message,
@@ -47,6 +55,8 @@ def send_action_email(user, subject, message, html_message):
 
 
 def send_activation_link(user):
+    """Generate and send an account activation link."""
+
     activation_data = generate_link(user, "activate")
     html_message = render_action_email(
         user=user,
@@ -68,6 +78,8 @@ def send_activation_link(user):
 
 
 def send_password_reset_link(user):
+    """Generate and send a password reset link."""
+
     activation_data = generate_link(user, "confirm_password")
     html_message = render_action_email(
         user=user,
